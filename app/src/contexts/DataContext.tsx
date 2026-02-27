@@ -154,7 +154,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           if (newLevel > updatedStats.level) {
             updatedStats.level = newLevel;
           }
-          updatedStats.pointsToNextLevel = newLevel * 1000;
+          updatedStats.pointsToNextLevel = (newLevel * 1000) - updatedStats.totalPoints;
 
           // Update streak
           const today = new Date().toISOString().split('T')[0];
@@ -220,9 +220,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Update weekly goals
-        const today = new Date().toISOString().split('T')[0];
         const updatedWeeklyGoals = userData.weeklyGoals.map((g) => {
-          if (g.date === today && !wasCompleted) {
+          const todayStr = new Date().toISOString().split('T')[0];
+          if (g.date === todayStr && !wasCompleted) {
             const newTasks = g.tasks + 1;
             return { ...g, tasks: newTasks, completed: newTasks >= 3 };
           }
