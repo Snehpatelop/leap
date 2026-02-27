@@ -55,7 +55,7 @@ const buildEventsFromTasks = (tasks: { id: string; title: string; type: string; 
     events[dateKey].push({
       id: task.id,
       title: task.title,
-      time: task.completedAt ? new Date(task.completedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—',
+      time: task.duration <= 15 ? '9:00 AM' : task.duration <= 20 ? '2:00 PM' : '7:00 PM',
       duration: task.duration,
       type: task.type as CalendarEvent['type'],
       completed: task.completed,

@@ -509,7 +509,7 @@ export function CommunityView() {
                 { label: 'Points', user: userData?.stats?.totalPoints || 0, friend: selectedFriend.points },
                 { label: 'Level', user: userData?.stats?.level || 1, friend: selectedFriend.level },
                 { label: 'Streak', user: userData?.stats?.streak || 0, friend: selectedFriend.streak },
-                { label: 'Tasks', user: userData?.stats?.tasksCompleted || 0, friend: 28 },
+                { label: 'Tasks', user: userData?.stats?.tasksCompleted || 0, friend: Math.round(selectedFriend.points / 80) },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="flex justify-between text-sm mb-1">

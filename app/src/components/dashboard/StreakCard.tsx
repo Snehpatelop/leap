@@ -24,7 +24,7 @@ export function StreakCard() {
   const weekDays = days.map((day, index) => {
     const isToday = index === today;
     const goal = weeklyGoals[index];
-    const isCompleted = goal ? goal.completed || goal.tasks > 0 : false;
+    const isCompleted = goal ? goal.completed : false;
     return { day, isToday, isCompleted };
   });
 
