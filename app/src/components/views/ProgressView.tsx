@@ -11,6 +11,18 @@ import {
   ArrowDown,
   Minus
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -38,7 +50,6 @@ export function ProgressView() {
   const [timeRange, setTimeRange] = useState('month');
 
   const stats = userData?.stats;
-  const skills = userData?.skillProgress || [];
 
   const mainStats = [
     { 
@@ -142,41 +153,19 @@ export function ProgressView() {
           <CardDescription>Your band score improvement across all sections</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {skills.map((skill) => {
-              const history = skillHistory.map(h => ({ 
-                month: h.month, 
-                score: h[skill.name.toLowerCase() as keyof typeof h] as number 
-              }));
-              
-              return (
-                <div key={skill.name}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${skill.color}`} />
-                      <span className="font-medium">{skill.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Started: 5.5</span>
-                      <ArrowUp className="w-4 h-4 text-green-500" />
-                      <span className="font-bold">{skill.score}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-end gap-1 h-16">
-                    {history.map((h) => (
-                      <div key={h.month} className="flex-1 flex flex-col items-center gap-1">
-                        <div 
-                          className={`w-full ${skill.color} rounded-t-sm transition-all hover:opacity-80`}
-                          style={{ height: `${(h.score / 9) * 100}%` }}
-                        />
-                        <span className="text-[10px] text-muted-foreground">{h.month}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={skillHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis domain={[4, 9]} tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="listening" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Listening" />
+              <Line type="monotone" dataKey="reading" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} name="Reading" />
+              <Line type="monotone" dataKey="writing" stroke="#a855f7" strokeWidth={2} dot={{ r: 4 }} name="Writing" />
+              <Line type="monotone" dataKey="speaking" stroke="#f97316" strokeWidth={2} dot={{ r: 4 }} name="Speaking" />
+            </LineChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 
@@ -186,39 +175,21 @@ export function ProgressView() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-indigo-600" />
-              Weekly Activity
+              Weekly Study Hours
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {weeklyData.map((week) => (
-                <div key={week.week} className="flex items-center gap-4">
-                  <div className="w-20 text-sm font-medium">{week.week}</div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 text-xs text-muted-foreground">Study</div>
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-indigo-500 rounded-full"
-                          style={{ width: `${(week.studyHours / 20) * 100}%` }}
-                        />
-                      </div>
-                      <div className="w-12 text-xs text-right">{week.studyHours}h</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 text-xs text-muted-foreground">Tasks</div>
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-green-500 rounded-full"
-                          style={{ width: `${(week.tasksCompleted / 25) * 100}%` }}
-                        />
-                      </div>
-                      <div className="w-12 text-xs text-right">{week.tasksCompleted}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={weeklyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="studyHours" fill="#6366f1" name="Study Hours" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="tasksCompleted" fill="#22c55e" name="Tasks" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 

@@ -46,6 +46,10 @@ export interface Task {
   points: number;
   completedAt: string | null;
   date: string;
+  description?: string;
+  category?: string;
+  dueDate?: string | null;
+  difficulty?: 'easy' | 'medium' | 'hard';
 }
 
 // Achievement Types

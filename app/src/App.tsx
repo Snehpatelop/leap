@@ -7,6 +7,7 @@ import { DashboardView } from '@/components/views/DashboardView';
 import { StudyPlanView } from '@/components/views/StudyPlanView';
 import { ProgressView } from '@/components/views/ProgressView';
 import { CommunityView } from '@/components/views/CommunityView';
+import { SettingsView } from '@/components/views/SettingsView';
 import { Toaster } from '@/components/ui/sonner';
 
 function MainApp() {
@@ -40,6 +41,7 @@ function MainApp() {
           {activeTab === 'study' && <StudyPlanView />}
           {activeTab === 'progress' && <ProgressView />}
           {activeTab === 'community' && <CommunityView />}
+          {activeTab === 'settings' && <SettingsView />}
         </main>
       </div>
     </DataProvider>
