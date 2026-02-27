@@ -47,7 +47,8 @@ export function ProgressView() {
       change: '+12%', 
       trend: 'up',
       icon: Clock,
-      color: 'blue'
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600'
     },
     { 
       label: 'Tasks Completed', 
@@ -55,7 +56,8 @@ export function ProgressView() {
       change: '+28%', 
       trend: 'up',
       icon: CheckCircle2,
-      color: 'green'
+      iconBg: 'bg-green-100',
+      iconColor: 'text-green-600'
     },
     { 
       label: 'Mock Tests', 
@@ -63,7 +65,8 @@ export function ProgressView() {
       change: '+3', 
       trend: 'up',
       icon: Target,
-      color: 'purple'
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600'
     },
     { 
       label: 'Current Streak', 
@@ -71,7 +74,8 @@ export function ProgressView() {
       change: stats && stats.streak > stats.longestStreak ? 'New Record!' : 'Keep going!', 
       trend: 'same',
       icon: Calendar,
-      color: 'amber'
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600'
     },
   ];
 
@@ -107,8 +111,8 @@ export function ProgressView() {
                   <p className="text-muted-foreground text-sm">{stat.label}</p>
                   <p className="text-3xl font-bold mt-1">{stat.value}</p>
                 </div>
-                <div className={`w-12 h-12 rounded-xl bg-${stat.color}-100 flex items-center justify-center`}>
-                  <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                <div className={`w-12 h-12 rounded-xl ${stat.iconBg} flex items-center justify-center`}>
+                  <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
                 </div>
               </div>
               <div className="mt-4 flex items-center gap-2">

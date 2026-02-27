@@ -137,15 +137,50 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           return task;
         });
 
+        const task = updatedTasks.find((t) => t.id === taskId);
+        const isCompleting = task?.completed ?? false;
+        const taskPoints = task?.points || 0;
+        const taskStudyHours = task?.duration ? task.duration / 60 : 0;
+
+        const currentStats = userData.stats;
+        const newTotalPoints = isCompleting
+          ? currentStats.totalPoints + taskPoints
+          : Math.max(0, currentStats.totalPoints - taskPoints);
+        const newTasksCompleted = isCompleting
+          ? currentStats.tasksCompleted + 1
+          : Math.max(0, currentStats.tasksCompleted - 1);
+        const newTotalStudyHours = isCompleting
+          ? currentStats.totalStudyHours + taskStudyHours
+          : Math.max(0, currentStats.totalStudyHours - taskStudyHours);
+        const newLevel = Math.floor(newTotalPoints / 100) + 1;
+
+        const today = new Date().toDateString();
+        const lastStudyDate = currentStats.lastStudyDate;
+        let newStreak = currentStats.streak;
+        if (isCompleting && lastStudyDate !== today) {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          newStreak = lastStudyDate === yesterday.toDateString() ? currentStats.streak + 1 : 1;
+        }
+
         const updatedData = {
           ...userData,
           tasks: updatedTasks,
+          stats: {
+            ...currentStats,
+            totalPoints: newTotalPoints,
+            tasksCompleted: newTasksCompleted,
+            totalStudyHours: newTotalStudyHours,
+            level: newLevel,
+            streak: newStreak,
+            longestStreak: Math.max(currentStats.longestStreak, newStreak),
+            lastStudyDate: isCompleting ? today : currentStats.lastStudyDate,
+          },
         };
 
         localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
         setUserData(updatedData);
 
-        const task = updatedTasks.find((t) => t.id === taskId);
         return {
           success: true,
           pointsEarned: task?.completed ? task?.points : 0,
