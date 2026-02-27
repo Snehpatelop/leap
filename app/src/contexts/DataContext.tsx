@@ -164,7 +164,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             yesterday.setDate(yesterday.getDate() - 1);
             if (lastStudyDate === yesterday.toDateString()) {
               updatedStats.streak += 1;
-            } else if (!lastStudyDate) {
+            } else {
               updatedStats.streak = 1;
             }
             updatedStats.lastStudyDate = today;
