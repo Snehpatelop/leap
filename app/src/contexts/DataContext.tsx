@@ -183,12 +183,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const updatedAchievements = userData.achievements.map((achievement) => {
           if (achievement.unlocked) return achievement;
           let newProgress = achievement.progress;
-          // First Steps: 1 task completed
-          if (achievement.id === '5') newProgress = newTasksCompleted;
-          // Task Master: 50 tasks
-          if (achievement.id === '2') newProgress = newTasksCompleted;
-          // Week Warrior: 7-day streak
-          if (achievement.id === '1') newProgress = newStreak;
+          // Tasks-based achievements (First Steps, Task Master, etc.)
+          if (achievement.total <= 50 && achievement.description?.toLowerCase().includes('task')) {
+            newProgress = newTasksCompleted;
+          }
+          // Streak-based achievements (Week Warrior)
+          if (achievement.description?.toLowerCase().includes('streak') || achievement.description?.toLowerCase().includes('row')) {
+            newProgress = newStreak;
+          }
 
           const shouldUnlock = newProgress >= achievement.total;
           if (shouldUnlock) {

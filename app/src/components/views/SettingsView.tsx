@@ -8,6 +8,17 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { toast } from 'sonner';
@@ -96,7 +107,6 @@ export function SettingsView() {
   };
 
   const handleResetProgress = async () => {
-    if (!window.confirm('Are you sure you want to reset all your progress? This cannot be undone.')) return;
     await resetData();
     toast.success('Progress reset. Please refresh the page.');
   };
@@ -251,14 +261,34 @@ export function SettingsView() {
             <Download className="w-4 h-4" />
             Export Data as JSON
           </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-2 text-amber-600 border-amber-200 hover:bg-amber-50"
-            onClick={handleResetProgress}
-          >
-            <Trash2 className="w-4 h-4" />
-            Reset Progress
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-amber-600 border-amber-200 hover:bg-amber-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                Reset Progress
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset all progress?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete all your points, tasks, streaks, and achievements. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={handleResetProgress}
+                >
+                  Reset Progress
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button
             variant="outline"
             className="w-full justify-start gap-2 text-red-600 border-red-200 hover:bg-red-50"
