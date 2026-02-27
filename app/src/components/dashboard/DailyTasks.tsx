@@ -10,15 +10,34 @@ import {
   CheckCircle2,
   Sparkles,
   RotateCcw,
-  Trophy
+  Trophy,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TaskPlayer } from '@/components/tasks/TaskPlayer';
 import { useData } from '@/contexts/DataContext';
 import { cn } from '@/lib/utils';
+import type { Task } from '@/types';
 
 const taskTypeConfig = {
   listening: { icon: Headphones, color: 'bg-blue-500', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', label: 'Listening' },
@@ -27,11 +46,24 @@ const taskTypeConfig = {
   speaking: { icon: Mic, color: 'bg-orange-500', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', label: 'Speaking' },
 };
 
+const EMPTY_FORM = {
+  title: '',
+  type: 'listening' as Task['type'],
+  duration: 15,
+  points: 10,
+  difficulty: 'medium' as NonNullable<Task['difficulty']>,
+  category: '',
+  dueDate: '',
+};
+
 export function DailyTasks() {
-  const { userData, toggleTask, generateNewTasks } = useData();
+  const { userData, toggleTask, generateNewTasks, createTask, deleteTask } = useData();
   const [animatingTask, setAnimatingTask] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [activeTask, setActiveTask] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [isCreating, setIsCreating] = useState(false);
 
   const tasks = userData?.tasks || [];
   const completedCount = tasks.filter(t => t.completed).length;
@@ -53,6 +85,33 @@ export function DailyTasks() {
 
   const handleGenerateNewTasks = async () => {
     await generateNewTasks();
+  };
+
+  const handleDeleteTask = async (e: React.MouseEvent, taskId: string) => {
+    e.stopPropagation();
+    await deleteTask(taskId);
+  };
+
+  const handleCreateTask = async () => {
+    if (!form.title.trim()) return;
+    setIsCreating(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await createTask({
+        title: form.title.trim(),
+        type: form.type,
+        duration: form.duration,
+        points: form.points,
+        difficulty: form.difficulty,
+        category: form.category || undefined,
+        dueDate: form.dueDate || null,
+        date: today,
+      });
+      setForm(EMPTY_FORM);
+      setShowCreateDialog(false);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const activeTaskData = tasks.find(t => t.id === activeTask);
@@ -158,7 +217,7 @@ export function DailyTasks() {
                       )}>
                         {task.title}
                       </p>
-                      <div className="flex items-center gap-3 mt-1.5">
+                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                         <span className="text-xs text-muted-foreground flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
                           <Clock className="w-3 h-3" />
                           {task.duration} min
@@ -181,11 +240,30 @@ export function DailyTasks() {
                         )}>
                           {config.label}
                         </span>
+                        {task.difficulty && (
+                          <span className={cn(
+                            "text-[10px] uppercase font-medium px-2 py-0.5 rounded-full",
+                            task.difficulty === 'easy' && 'bg-green-100 text-green-700',
+                            task.difficulty === 'medium' && 'bg-amber-100 text-amber-700',
+                            task.difficulty === 'hard' && 'bg-red-100 text-red-700',
+                          )}>
+                            {task.difficulty}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Action buttons */}
                     <div className="flex items-center gap-2">
+                      {/* Delete button */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleDeleteTask(e, task.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600 hover:bg-red-50 p-1 h-auto"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                       {!task.completed ? (
                         <>
                           <Button 
@@ -221,6 +299,14 @@ export function DailyTasks() {
 
           {/* Action buttons */}
           <div className="mt-5 flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateDialog(true)}
+              className="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Task
+            </Button>
             <Button 
               className="flex-1 gradient-primary text-white hover:opacity-90 shadow-lg shadow-indigo-200"
               disabled={allCompleted}
@@ -273,6 +359,122 @@ export function DailyTasks() {
           onComplete={() => handleToggleTask(activeTaskData.id)}
         />
       )}
+
+      {/* Create Task Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5 text-indigo-600" />
+              Create New Task
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="task-title">Title *</Label>
+              <Input
+                id="task-title"
+                placeholder="e.g. Reading comprehension practice"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Type</Label>
+                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Task['type'] })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="listening">Listening</SelectItem>
+                    <SelectItem value="reading">Reading</SelectItem>
+                    <SelectItem value="writing">Writing</SelectItem>
+                    <SelectItem value="speaking">Speaking</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Difficulty</Label>
+                <Select
+                  value={form.difficulty}
+                  onValueChange={(v) => setForm({ ...form, difficulty: v as NonNullable<Task['difficulty']> })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="task-duration">Duration (min)</Label>
+                <Input
+                  id="task-duration"
+                  type="number"
+                  min={1}
+                  value={form.duration}
+                  onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="task-points">Points</Label>
+                <Input
+                  id="task-points"
+                  type="number"
+                  min={1}
+                  value={form.points}
+                  onChange={(e) => setForm({ ...form, points: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="task-category">Category (optional)</Label>
+              <Input
+                id="task-category"
+                placeholder="e.g. Vocabulary, Grammar"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="task-due">Due Date (optional)</Label>
+              <Input
+                id="task-due"
+                type="date"
+                value={form.dueDate}
+                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateTask}
+              disabled={!form.title.trim() || isCreating}
+              className="gradient-primary text-white"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Create Task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

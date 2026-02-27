@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { UserData, Notification } from '@/types';
+import type { UserData, Notification, Task } from '@/types';
 import { useAuth } from './AuthContext';
 import { generateDefaultTasks, generateDefaultAchievements, generateDefaultWeeklyGoals } from '@/lib/database';
 
@@ -8,10 +8,14 @@ interface DataContextType {
   isLoading: boolean;
   refreshData: () => Promise<void>;
   toggleTask: (taskId: string) => Promise<{ success: boolean; pointsEarned?: number; message?: string }>;
+  createTask: (task: Omit<Task, 'id' | 'completed' | 'completedAt'>) => Promise<void>;
+  updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
   joinStudyGroup: (groupId: string) => Promise<boolean>;
   markNotificationRead: (notificationId: string) => Promise<void>;
   generateNewTasks: () => Promise<void>;
   addNotification: (title: string, message: string, type?: Notification['type']) => Promise<void>;
+  updateUser: (updates: Partial<UserData['user']>) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -163,19 +167,53 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           newStreak = lastStudyDate === yesterday.toDateString() ? currentStats.streak + 1 : 1;
         }
 
+        const newStats = {
+          ...currentStats,
+          totalPoints: newTotalPoints,
+          tasksCompleted: newTasksCompleted,
+          totalStudyHours: newTotalStudyHours,
+          level: newLevel,
+          streak: newStreak,
+          longestStreak: Math.max(currentStats.longestStreak, newStreak),
+          lastStudyDate: isCompleting ? today : currentStats.lastStudyDate,
+        };
+
+        // Check and unlock achievements and accumulate bonus points
+        let achievementPointsBonus = 0;
+        const updatedAchievements = userData.achievements.map((achievement) => {
+          if (achievement.unlocked) return achievement;
+          let newProgress = achievement.progress;
+          // Tasks-based achievements (First Steps, Task Master, etc.)
+          if (achievement.total <= 50 && achievement.description?.toLowerCase().includes('task')) {
+            newProgress = newTasksCompleted;
+          }
+          // Streak-based achievements (Week Warrior)
+          if (achievement.description?.toLowerCase().includes('streak') || achievement.description?.toLowerCase().includes('row')) {
+            newProgress = newStreak;
+          }
+
+          const shouldUnlock = newProgress >= achievement.total;
+          if (shouldUnlock) {
+            achievementPointsBonus += achievement.pointsReward;
+          }
+          return {
+            ...achievement,
+            progress: newProgress,
+            unlocked: shouldUnlock,
+            unlockedAt: shouldUnlock ? new Date().toISOString() : achievement.unlockedAt,
+          };
+        });
+
+        const finalStats = {
+          ...newStats,
+          totalPoints: newStats.totalPoints + achievementPointsBonus,
+        };
+
         const updatedData = {
           ...userData,
           tasks: updatedTasks,
-          stats: {
-            ...currentStats,
-            totalPoints: newTotalPoints,
-            tasksCompleted: newTasksCompleted,
-            totalStudyHours: newTotalStudyHours,
-            level: newLevel,
-            streak: newStreak,
-            longestStreak: Math.max(currentStats.longestStreak, newStreak),
-            lastStudyDate: isCompleting ? today : currentStats.lastStudyDate,
-          },
+          stats: finalStats,
+          achievements: updatedAchievements,
         };
 
         localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
@@ -271,7 +309,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const notification: Notification = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           title,
           message,
           type,
@@ -293,6 +331,70 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [user, userData]
   );
 
+  const createTask = useCallback(
+    async (task: Omit<Task, 'id' | 'completed' | 'completedAt'>): Promise<void> => {
+      if (!user || !userData) return;
+      try {
+        const newTask: Task = {
+          ...task,
+          id: crypto.randomUUID(),
+          completed: false,
+          completedAt: null,
+        };
+        const updatedData = { ...userData, tasks: [...userData.tasks, newTask] };
+        localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
+        setUserData(updatedData);
+      } catch (error) {
+        console.error('Error creating task:', error);
+      }
+    },
+    [user, userData]
+  );
+
+  const updateTask = useCallback(
+    async (taskId: string, updates: Partial<Task>): Promise<void> => {
+      if (!user || !userData) return;
+      try {
+        const updatedTasks = userData.tasks.map((t) => (t.id === taskId ? { ...t, ...updates } : t));
+        const updatedData = { ...userData, tasks: updatedTasks };
+        localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
+        setUserData(updatedData);
+      } catch (error) {
+        console.error('Error updating task:', error);
+      }
+    },
+    [user, userData]
+  );
+
+  const deleteTask = useCallback(
+    async (taskId: string): Promise<void> => {
+      if (!user || !userData) return;
+      try {
+        const updatedData = { ...userData, tasks: userData.tasks.filter((t) => t.id !== taskId) };
+        localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
+        setUserData(updatedData);
+      } catch (error) {
+        console.error('Error deleting task:', error);
+      }
+    },
+    [user, userData]
+  );
+
+  const updateUser = useCallback(
+    async (updates: Partial<UserData['user']>): Promise<void> => {
+      if (!user || !userData) return;
+      try {
+        const updatedUser = { ...userData.user, ...updates };
+        const updatedData = { ...userData, user: updatedUser };
+        localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
+        setUserData(updatedData);
+      } catch (error) {
+        console.error('Error updating user:', error);
+      }
+    },
+    [user, userData]
+  );
+
   return (
     <DataContext.Provider
       value={{
@@ -300,10 +402,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         refreshData,
         toggleTask,
+        createTask,
+        updateTask,
+        deleteTask,
         joinStudyGroup,
         markNotificationRead,
         generateNewTasks,
         addNotification,
+        updateUser,
       }}
     >
       {children}

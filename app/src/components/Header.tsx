@@ -33,6 +33,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
     { id: 'study', label: 'Study Plan', icon: Sparkles },
     { id: 'progress', label: 'Progress', icon: Star },
     { id: 'community', label: 'Community', icon: User },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (

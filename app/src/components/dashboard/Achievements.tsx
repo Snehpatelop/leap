@@ -56,15 +56,15 @@ export function Achievements() {
                 className={cn(
                   "p-4 rounded-xl border-2 transition-all duration-300",
                   achievement.unlocked 
-                    ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-md' 
-                    : 'bg-gray-50 border-gray-100 hover:border-gray-200'
+                    ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.4)]' 
+                    : 'bg-gray-50 border-gray-100 hover:border-gray-200 grayscale'
                 )}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className={cn(
                     "w-10 h-10 rounded-lg flex items-center justify-center transition-all",
                     achievement.unlocked 
-                      ? 'bg-amber-500 text-white shadow-lg' 
+                      ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' 
                       : 'bg-gray-200 text-gray-400'
                   )}>
                     {achievement.unlocked ? (
@@ -90,22 +90,24 @@ export function Achievements() {
                   {achievement.description}
                 </p>
 
-                {!achievement.unlocked && (
-                  <div className="mt-3">
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="text-indigo-600 font-medium">
-                        {achievement.progress}/{achievement.total}
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-indigo-500 rounded-full transition-all duration-500"
-                        style={{ width: `${(achievement.progress / achievement.total) * 100}%` }}
-                      />
-                    </div>
+                {/* Progress bar for all achievements */}
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className={cn("font-medium", achievement.unlocked ? 'text-amber-600' : 'text-indigo-600')}>
+                      {Math.min(achievement.progress, achievement.total)}/{achievement.total}
+                    </span>
                   </div>
-                )}
+                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        achievement.unlocked ? 'bg-amber-500' : 'bg-indigo-500'
+                      )}
+                      style={{ width: `${Math.min((achievement.progress / achievement.total) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
 
                 {achievement.unlocked && achievement.unlockedAt && (
                   <p className="text-[10px] text-amber-600 mt-2">
