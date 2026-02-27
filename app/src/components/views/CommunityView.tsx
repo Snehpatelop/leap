@@ -502,10 +502,10 @@ export function CommunityView() {
               </div>
 
               {[
-                { label: 'Points', user: 2450, friend: selectedFriend.points },
-                { label: 'Level', user: 3, friend: selectedFriend.level },
-                { label: 'Streak', user: 12, friend: selectedFriend.streak },
-                { label: 'Tasks', user: 32, friend: 28 },
+                { label: 'Points', user: userPoints, friend: selectedFriend.points },
+                { label: 'Level', user: userData?.stats?.level || 1, friend: selectedFriend.level },
+                { label: 'Streak', user: userData?.stats?.streak || 0, friend: selectedFriend.streak },
+                { label: 'Tasks', user: userData?.stats?.tasksCompleted || 0, friend: 28 },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="flex justify-between text-sm mb-1">

@@ -126,30 +126,66 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (!user || !userData) return { success: false, message: 'Not authenticated' };
 
       try {
-        const updatedTasks = userData.tasks.map((task) => {
-          if (task.id === taskId) {
+        const task = userData.tasks.find((t) => t.id === taskId);
+        if (!task) return { success: false, message: 'Task not found' };
+
+        const wasCompleted = task.completed;
+        const updatedTasks = userData.tasks.map((t) => {
+          if (t.id === taskId) {
             return {
-              ...task,
-              completed: !task.completed,
-              completedAt: !task.completed ? new Date().toISOString() : null,
+              ...t,
+              completed: !t.completed,
+              completedAt: !t.completed ? new Date().toISOString() : null,
             };
           }
-          return task;
+          return t;
         });
+
+        const pointsDelta = wasCompleted ? -task.points : task.points;
+        const tasksDelta = wasCompleted ? -1 : 1;
+
+        const updatedStats = {
+          ...userData.stats,
+          totalPoints: Math.max(0, userData.stats.totalPoints + pointsDelta),
+          tasksCompleted: Math.max(0, userData.stats.tasksCompleted + tasksDelta),
+        };
+
+        // Update level based on points
+        const newLevel = Math.floor(updatedStats.totalPoints / 1000) + 1;
+        updatedStats.level = newLevel;
+        updatedStats.pointsToNextLevel = newLevel * 1000 - updatedStats.totalPoints;
+
+        // Update streak when completing a task
+        if (!wasCompleted) {
+          const today = new Date().toDateString();
+          const lastStudyDate = updatedStats.lastStudyDate;
+          if (lastStudyDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (lastStudyDate === yesterday.toDateString()) {
+              updatedStats.streak += 1;
+            } else if (!lastStudyDate) {
+              updatedStats.streak = 1;
+            }
+            updatedStats.lastStudyDate = today;
+            updatedStats.longestStreak = Math.max(updatedStats.longestStreak, updatedStats.streak);
+          }
+        }
 
         const updatedData = {
           ...userData,
           tasks: updatedTasks,
+          stats: updatedStats,
         };
 
         localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
         setUserData(updatedData);
 
-        const task = updatedTasks.find((t) => t.id === taskId);
+        const completedTask = updatedTasks.find((t) => t.id === taskId);
         return {
           success: true,
-          pointsEarned: task?.completed ? task?.points : 0,
-          message: task?.completed ? `Task completed! +${task?.points || 0} points` : 'Task uncompleted',
+          pointsEarned: completedTask?.completed ? task.points : 0,
+          message: completedTask?.completed ? `Task completed! +${task.points} points` : 'Task uncompleted',
         };
       } catch (error) {
         console.error('Error toggling task:', error);
