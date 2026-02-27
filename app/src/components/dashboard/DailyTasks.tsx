@@ -40,10 +40,22 @@ import { cn } from '@/lib/utils';
 import type { Task } from '@/types';
 
 const taskTypeConfig = {
-  listening: { icon: Headphones, color: 'bg-blue-500', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', label: 'Listening' },
-  reading: { icon: BookOpen, color: 'bg-green-500', bgColor: 'bg-green-50', borderColor: 'border-green-200', label: 'Reading' },
-  writing: { icon: PenTool, color: 'bg-purple-500', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', label: 'Writing' },
-  speaking: { icon: Mic, color: 'bg-orange-500', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', label: 'Speaking' },
+  listening: {
+    icon: Headphones, color: 'bg-blue-500', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', label: 'Listening',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=120&h=120&fit=crop&q=80',
+  },
+  reading: {
+    icon: BookOpen, color: 'bg-green-500', bgColor: 'bg-green-50', borderColor: 'border-green-200', label: 'Reading',
+    image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=120&h=120&fit=crop&q=80',
+  },
+  writing: {
+    icon: PenTool, color: 'bg-purple-500', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', label: 'Writing',
+    image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=120&h=120&fit=crop&q=80',
+  },
+  speaking: {
+    icon: Mic, color: 'bg-orange-500', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', label: 'Speaking',
+    image: 'https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=120&h=120&fit=crop&q=80',
+  },
 };
 
 const EMPTY_FORM = {
@@ -118,12 +130,12 @@ export function DailyTasks() {
 
   return (
     <>
-      <Card className="border-0 shadow-lg overflow-hidden">
+      <Card className="border-0 shadow-lg overflow-hidden perspective-container">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center animate-float-3d">
                   <Target className="w-4 h-4 text-indigo-600" />
                 </div>
                 Today's Micro-Learning
@@ -183,12 +195,19 @@ export function DailyTasks() {
                   <div
                     key={task.id}
                     className={cn(
-                      "group relative flex items-center gap-4 p-4 rounded-xl transition-all duration-300",
+                      "group relative flex items-center gap-4 p-4 rounded-xl transition-all duration-300 card-3d-subtle",
                       task.completed 
                         ? `${config.bgColor} border-2 ${config.borderColor}` 
                         : 'bg-gray-50 hover:bg-white border-2 border-transparent hover:border-indigo-200 hover:shadow-md'
                     )}
                   >
+                    {/* Task image thumbnail */}
+                    <img
+                      src={config.image}
+                      alt={config.label}
+                      className="task-image-thumb"
+                      loading="lazy"
+                    />
                     {/* Task icon */}
                     <div 
                       className={cn(

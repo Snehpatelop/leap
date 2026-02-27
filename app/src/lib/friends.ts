@@ -183,8 +183,12 @@ class FriendsManager {
     return true;
   }
 
-  // Invite by email
-  inviteByEmail(email: string): { success: boolean; message: string } {
+  // Invite by email — opens the user's mail client with a pre-filled invitation
+  inviteByEmail(email: string, senderName: string = 'A friend'): { success: boolean; message: string } {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { success: false, message: 'Please enter a valid email address' };
+    }
+
     // Check if already a friend
     const existingFriend = this.friends.find(f => f.email === email);
     if (existingFriend?.isFriend) {
@@ -198,9 +202,24 @@ class FriendsManager {
     if (existingRequest) {
       return { success: false, message: 'Invitation already sent' };
     }
-    
-    // Simulate sending invitation
-    return { success: true, message: 'Invitation sent successfully!' };
+
+    // Record the invite locally
+    this.requests.push({
+      from: 'current_user',
+      to: email,
+      status: 'pending',
+      sentAt: new Date().toISOString(),
+    });
+    this.save();
+
+    // Open the user's default mail client with a pre-filled invite
+    const subject = encodeURIComponent(`${senderName} invited you to join Leap Scholar!`);
+    const body = encodeURIComponent(
+      `Hi there!\n\n${senderName} thinks you'd love Leap Scholar — a fun, gamified IELTS prep platform.\n\nJoin now and start your learning journey: ${window.location.origin}\n\nSee you there! 🎯`
+    );
+    window.open(`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`, '_blank');
+
+    return { success: true, message: `Invitation email opened for ${email}!` };
   }
 
   // Get friend activity

@@ -27,6 +27,8 @@ interface TaskPlayerProps {
 const taskContent: Record<string, any> = {
   listening: {
     title: 'Academic Lecture: Climate Change',
+    image: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=600&h=300&fit=crop&q=80',
+    imageAlt: 'Climate change and global warming lecture illustration',
     audioUrl: null, // Would be real audio in production
     transcript: `Welcome to today's lecture on climate change and its global impact. Over the past century, we've observed a significant increase in global temperatures, primarily driven by human activities such as burning fossil fuels and deforestation.
 
@@ -73,6 +75,8 @@ The question is: Are we willing to make the necessary changes before it's too la
   },
   reading: {
     title: 'The Science of Sleep',
+    image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&h=300&fit=crop&q=80',
+    imageAlt: 'Person sleeping peacefully in a comfortable bed',
     passage: `Sleep is a fundamental biological process that affects every aspect of our health and well-being. Despite its importance, many people underestimate the power of a good night's sleep.
 
 Recent research has revealed that sleep plays a crucial role in memory consolidation. During deep sleep, the brain processes information from the day, transferring short-term memories to long-term storage. This is why students who get adequate sleep tend to perform better on exams.
@@ -120,6 +124,8 @@ In conclusion, prioritizing sleep is one of the most important things you can do
   },
   writing: {
     title: 'Vocabulary Builder: Academic Words',
+    image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&h=300&fit=crop&q=80',
+    imageAlt: 'Student writing academic notes at a desk',
     words: [
       { word: 'Significant', meaning: 'Important or noticeable', example: 'There was a significant improvement in test scores.' },
       { word: 'Consequently', meaning: 'As a result', example: 'She studied hard; consequently, she passed the exam.' },
@@ -143,6 +149,8 @@ In conclusion, prioritizing sleep is one of the most important things you can do
   },
   speaking: {
     title: 'Describe a Photo: City Life',
+    image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&h=400&fit=crop&q=80',
+    imageAlt: 'Busy city street with tall buildings, pedestrians, and traffic',
     imageDescription: 'A busy city street with people walking, cars, tall buildings, and a coffee shop',
     prompts: [
       'Where do you think this photo was taken?',
@@ -290,6 +298,7 @@ export function TaskPlayer({ task, isOpen, onClose, onComplete }: TaskPlayerProp
           {/* Listening Task */}
           {task.type === 'listening' && content && (
             <div className="space-y-6">
+              <img src={content.image} alt={content.imageAlt || content.title} className="w-full h-40 object-cover rounded-xl" loading="lazy" />
               <div className="bg-gray-100 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-semibold">{content.title}</h4>
@@ -404,6 +413,7 @@ export function TaskPlayer({ task, isOpen, onClose, onComplete }: TaskPlayerProp
           {/* Reading Task */}
           {task.type === 'reading' && content && (
             <div className="space-y-6">
+              <img src={content.image} alt={content.imageAlt || content.title} className="w-full h-40 object-cover rounded-xl" loading="lazy" />
               <h4 className="text-xl font-semibold">{content.title}</h4>
               
               <div className="flex gap-2 border-b">
@@ -486,6 +496,7 @@ export function TaskPlayer({ task, isOpen, onClose, onComplete }: TaskPlayerProp
           {/* Writing Task */}
           {task.type === 'writing' && content && (
             <div className="space-y-6">
+              <img src={content.image} alt={content.imageAlt || content.title} className="w-full h-40 object-cover rounded-xl" loading="lazy" />
               <h4 className="text-xl font-semibold">{content.title}</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -563,11 +574,14 @@ export function TaskPlayer({ task, isOpen, onClose, onComplete }: TaskPlayerProp
             <div className="space-y-6">
               <h4 className="text-xl font-semibold">{content.title}</h4>
               
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-8 text-center">
-                <div className="w-32 h-32 mx-auto bg-white rounded-xl shadow-lg flex items-center justify-center mb-4">
-                  <span className="text-6xl">🏙️</span>
-                </div>
-                <p className="text-gray-600">{content.imageDescription}</p>
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden">
+                <img
+                  src={content.image}
+                  alt={content.imageAlt || content.imageDescription}
+                  className="w-full h-48 object-cover"
+                  loading="lazy"
+                />
+                <p className="text-gray-600 text-center p-4">{content.imageDescription}</p>
               </div>
 
               <div className="space-y-4">

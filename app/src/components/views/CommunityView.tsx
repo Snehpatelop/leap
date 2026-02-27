@@ -83,11 +83,11 @@ export function CommunityView() {
   };
 
   const handleInvite = () => {
-    const result = friendsManager.inviteByEmail(inviteEmail);
+    const result = friendsManager.inviteByEmail(inviteEmail, user?.name || 'A friend');
     setInviteMessage({ type: result.success ? 'success' : 'error', text: result.message });
     if (result.success) {
       setInviteEmail('');
-      setTimeout(() => setInviteMessage(null), 3000);
+      setTimeout(() => setInviteMessage(null), 5000);
     }
   };
 
@@ -122,7 +122,7 @@ export function CommunityView() {
       </div>
 
       {/* User's Rank Card */}
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white card-3d perspective-container">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -432,9 +432,14 @@ export function CommunityView() {
       {/* Invite Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4">
+          <Card className="w-full max-w-md mx-4 card-3d perspective-container">
             <CardHeader>
-              <CardTitle>Invite Friends</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-white" />
+                </div>
+                Invite Friends
+              </CardTitle>
               <CardDescription>Earn 100 bonus points for each friend who joins!</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -442,16 +447,22 @@ export function CommunityView() {
                 <Input 
                   placeholder="Enter email address" 
                   className="flex-1"
+                  type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleInvite(); }}
                 />
-                <Button className="gradient-primary" onClick={handleInvite}>Send</Button>
+                <Button className="gradient-primary" onClick={handleInvite} disabled={!inviteEmail.trim()}>
+                  <Mail className="w-4 h-4 mr-1" />
+                  Send
+                </Button>
               </div>
               {inviteMessage && (
                 <div className={cn(
-                  "p-3 rounded-lg text-sm",
+                  "p-3 rounded-lg text-sm flex items-center gap-2",
                   inviteMessage.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
                 )}>
+                  {inviteMessage.type === 'success' ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                   {inviteMessage.text}
                 </div>
               )}
@@ -466,6 +477,9 @@ export function CommunityView() {
                   }}>Copy</Button>
                 </div>
               </div>
+              <p className="text-xs text-gray-400 text-center">
+                Clicking Send will open your default email app with a pre-filled invitation.
+              </p>
               <Button variant="outline" className="w-full" onClick={() => setShowInviteModal(false)}>
                 Close
               </Button>
