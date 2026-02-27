@@ -76,6 +76,8 @@ function getDefaultUserData(userId: string): UserData {
 // Storage key helper
 const getUserDataKey = (userId: string) => `leap_userdata_${userId}`;
 
+const POINTS_PER_LEVEL = 1000;
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -137,19 +139,58 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           return task;
         });
 
+        const task = updatedTasks.find((t) => t.id === taskId);
+        const isNowCompleted = task?.completed ?? false;
+        const pointsEarned = isNowCompleted ? (task?.points ?? 0) : 0;
+
+        // Update stats when task completion changes
+        const today = new Date().toDateString();
+        const lastStudyDate = userData.stats.lastStudyDate;
+        const isNewDay = lastStudyDate !== today;
+
+        const tasksCompletedDelta = isNowCompleted ? 1 : -1;
+        const durationInHours = (task?.duration ?? 0) / 60;
+        const studyHoursDelta = isNowCompleted ? durationInHours : -durationInHours;
+        const newTotalPoints = Math.max(0, userData.stats.totalPoints + (isNowCompleted ? pointsEarned : -pointsEarned));
+        const newTasksCompleted = Math.max(0, userData.stats.tasksCompleted + tasksCompletedDelta);
+        const newStudyHours = Math.max(0, userData.stats.totalStudyHours + studyHoursDelta);
+
+        // Update streak only when completing (not uncompleting) on a new day
+        let newStreak = userData.stats.streak;
+        let newLastStudyDate = userData.stats.lastStudyDate;
+        if (isNowCompleted && isNewDay) {
+          newStreak = userData.stats.streak + 1;
+          newLastStudyDate = today;
+        }
+        const newLongestStreak = Math.max(userData.stats.longestStreak, newStreak);
+
+        // Calculate level from total points
+        const newLevel = Math.floor(newTotalPoints / POINTS_PER_LEVEL) + 1;
+        const newPointsToNextLevel = POINTS_PER_LEVEL - (newTotalPoints % POINTS_PER_LEVEL);
+
         const updatedData = {
           ...userData,
           tasks: updatedTasks,
+          stats: {
+            ...userData.stats,
+            totalPoints: newTotalPoints,
+            tasksCompleted: newTasksCompleted,
+            totalStudyHours: newStudyHours,
+            streak: newStreak,
+            longestStreak: newLongestStreak,
+            lastStudyDate: newLastStudyDate,
+            level: newLevel,
+            pointsToNextLevel: newPointsToNextLevel,
+          },
         };
 
         localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
         setUserData(updatedData);
 
-        const task = updatedTasks.find((t) => t.id === taskId);
         return {
           success: true,
-          pointsEarned: task?.completed ? task?.points : 0,
-          message: task?.completed ? `Task completed! +${task?.points || 0} points` : 'Task uncompleted',
+          pointsEarned,
+          message: isNowCompleted ? `Task completed! +${pointsEarned} points` : 'Task uncompleted',
         };
       } catch (error) {
         console.error('Error toggling task:', error);

@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+app/node_modules/
+
+# Build output
+dist/
+app/dist/
+
+# Environment variables
+.env.local
+app/.env.local
+.env.*.local
+
+# Editor directories and files
+.DS_Store
+*.local
+
+# Vercel
+.vercel
