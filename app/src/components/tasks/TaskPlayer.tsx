@@ -390,6 +390,10 @@ export function TaskPlayer({ task, isOpen, onClose, onComplete }: TaskPlayerProp
                       <p className="text-sm text-green-600">
                         {getScore() === content.questions.length ? 'Perfect! 🎉' : 'Good effort! Keep practicing!'}
                       </p>
+                      <Button onClick={handleComplete} className="mt-4 gradient-primary">
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Complete Task
+                      </Button>
                     </div>
                   )}
                 </div>
