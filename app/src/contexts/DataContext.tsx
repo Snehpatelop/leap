@@ -140,7 +140,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const task = updatedTasks.find((t) => t.id === taskId);
         const isCompleting = task?.completed ?? false;
         const taskPoints = task?.points || 0;
-        const taskStudyHours = (task as any)?.studyHours || taskPoints / 600;
+        const taskStudyHours = task?.duration ? task.duration / 60 : 0;
 
         const currentStats = userData.stats;
         const newTotalPoints = isCompleting
