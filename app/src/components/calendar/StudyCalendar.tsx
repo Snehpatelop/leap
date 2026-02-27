@@ -360,7 +360,7 @@ export function StudyCalendar() {
                     {/* Study hours indicator */}
                     {day.studyHours > 0 && (
                       <div className="absolute top-1 right-1">
-                        <span className="text-[8px] text-gray-400">{day.studyHours}h</span>
+                        <span className="text-[8px] text-gray-400">{day.studyHours.toFixed(1)}h</span>
                       </div>
                     )}
                   </button>

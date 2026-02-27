@@ -56,15 +56,15 @@ export function StudyPlanView() {
       {/* Progress Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: 'Overall Progress', value: `${Math.round(studyPlan.reduce((acc, w) => acc + w.completed, 0) / studyPlan.reduce((acc, w) => acc + w.tasks, 0) * 100) || 0}%`, icon: TrendingUp, color: 'indigo' },
-          { label: 'Weeks Completed', value: `${studyPlan.filter(w => w.completed >= w.tasks).length}/4`, icon: CheckCircle2, color: 'green' },
-          { label: 'Tasks Done', value: `${studyPlan.reduce((acc, w) => acc + w.completed, 0)}`, icon: Target, color: 'amber' },
-          { label: 'Study Hours', value: `${stats?.totalStudyHours?.toFixed(1) || '0'}h`, icon: Clock, color: 'purple' },
+          { label: 'Overall Progress', value: `${Math.round(studyPlan.reduce((acc, w) => acc + w.completed, 0) / studyPlan.reduce((acc, w) => acc + w.tasks, 0) * 100) || 0}%`, icon: TrendingUp, bgColor: 'bg-indigo-100', textColor: 'text-indigo-600' },
+          { label: 'Weeks Completed', value: `${studyPlan.filter(w => w.completed >= w.tasks).length}/4`, icon: CheckCircle2, bgColor: 'bg-green-100', textColor: 'text-green-600' },
+          { label: 'Tasks Done', value: `${studyPlan.reduce((acc, w) => acc + w.completed, 0)}`, icon: Target, bgColor: 'bg-amber-100', textColor: 'text-amber-600' },
+          { label: 'Study Hours', value: `${stats?.totalStudyHours?.toFixed(1) || '0'}h`, icon: Clock, bgColor: 'bg-purple-100', textColor: 'text-purple-600' },
         ].map((stat) => (
           <Card key={stat.label} className="border-0 shadow-md">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg bg-${stat.color}-100 flex items-center justify-center`}>
-                <stat.icon className={`w-5 h-5 text-${stat.color}-600`} />
+              <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                <stat.icon className={`w-5 h-5 ${stat.textColor}`} />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stat.value}</p>
