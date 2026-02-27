@@ -138,7 +138,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onTabChange('progress')}>
+                  <DropdownMenuItem onClick={() => onTabChange('settings')}>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </DropdownMenuItem>

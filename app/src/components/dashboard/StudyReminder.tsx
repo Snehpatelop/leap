@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, CheckCircle2, Bell, X, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 const reminderTimes = [
@@ -12,9 +13,32 @@ const reminderTimes = [
 ];
 
 export function StudyReminder() {
-  const [isSet, setIsSet] = useState(true);
-  const [selectedTime, setSelectedTime] = useState('7:00 PM');
+  const { user } = useAuth();
+  const storageKey = user ? `leap_reminder_${user.id}` : null;
+
+  const [isSet, setIsSet] = useState(() => {
+    if (!storageKey) return false;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try { return JSON.parse(stored).isSet ?? false; } catch { return false; }
+    }
+    return false;
+  });
+  const [selectedTime, setSelectedTime] = useState(() => {
+    if (!storageKey) return '7:00 PM';
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try { return JSON.parse(stored).time ?? '7:00 PM'; } catch { return '7:00 PM'; }
+    }
+    return '7:00 PM';
+  });
   const [showTimeSelector, setShowTimeSelector] = useState(false);
+
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify({ isSet, time: selectedTime }));
+    }
+  }, [isSet, selectedTime, storageKey]);
 
   const handleSetReminder = (time: string) => {
     setSelectedTime(time);

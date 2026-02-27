@@ -209,11 +209,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           totalPoints: newStats.totalPoints + achievementPointsBonus,
         };
 
+        // Update weekly goals for today
+        const todayDate = new Date().toISOString().split('T')[0];
+        const updatedWeeklyGoals = userData.weeklyGoals.map((goal) => {
+          if (goal.date === todayDate) {
+            const newTaskCount = isCompleting ? goal.tasks + 1 : Math.max(0, goal.tasks - 1);
+            return { ...goal, tasks: newTaskCount, completed: newTaskCount >= 3 };
+          }
+          return goal;
+        });
+
+        // Update study plan progress based on total completed tasks
+        const totalCompletedNow = updatedTasks.filter(t => t.completed).length;
+        const updatedStudyPlan = userData.studyPlan.map((week, index) => {
+          // Distribute completed tasks across weeks proportionally
+          const weekStart = userData.studyPlan.slice(0, index).reduce((acc, w) => acc + w.tasks, 0);
+          const completedInRange = Math.min(Math.max(totalCompletedNow - weekStart, 0), week.tasks);
+          return { ...week, completed: completedInRange };
+        });
+
         const updatedData = {
           ...userData,
           tasks: updatedTasks,
           stats: finalStats,
           achievements: updatedAchievements,
+          weeklyGoals: updatedWeeklyGoals,
+          studyPlan: updatedStudyPlan,
         };
 
         localStorage.setItem(getUserDataKey(user.id), JSON.stringify(updatedData));
