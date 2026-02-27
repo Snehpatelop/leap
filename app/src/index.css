@@ -246,6 +246,49 @@
 .stagger-4 { animation-delay: 0.4s; }
 .stagger-5 { animation-delay: 0.5s; }
 
+/* 3D Card effects */
+.perspective-container {
+  perspective: 1000px;
+}
+
+.card-3d {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  transform: rotateY(-2deg) rotateX(2deg) translateY(-4px);
+  box-shadow: 8px 8px 30px rgba(99, 102, 241, 0.15), -2px -2px 10px rgba(255, 255, 255, 0.5);
+}
+
+.card-3d-subtle {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d-subtle:hover {
+  transform: rotateY(-1deg) rotateX(1deg) translateY(-2px);
+  box-shadow: 4px 4px 20px rgba(99, 102, 241, 0.1);
+}
+
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0px) rotateX(0deg); }
+  50% { transform: translateY(-8px) rotateX(2deg); }
+}
+
+.animate-float-3d {
+  animation: float-3d 4s ease-in-out infinite;
+}
+
+/* Task image thumbnail */
+.task-image-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 /* Toast notification styles */
 [data-sonner-toast] {
   --normal-bg: white;
