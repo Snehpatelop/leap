@@ -17,13 +17,14 @@ export function StreakCard() {
     return () => clearTimeout(timer);
   }, [streak]);
 
-  // Generate week days
+  // Generate week days based on actual weekly goals data
   const today = new Date().getDay();
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weeklyGoals = userData?.weeklyGoals || [];
   const weekDays = days.map((day, index) => {
     const isToday = index === today;
-    const isPast = index < today;
-    const isCompleted = isPast || (isToday && streak > 0);
+    const goal = weeklyGoals[index];
+    const isCompleted = goal ? goal.completed || goal.tasks > 0 : false;
     return { day, isToday, isCompleted };
   });
 

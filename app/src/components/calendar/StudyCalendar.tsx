@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useData } from '@/contexts/DataContext';
 import { cn } from '@/lib/utils';
 
 interface CalendarEvent {
@@ -44,71 +45,36 @@ const eventTypeColors: Record<string, { bg: string; text: string; border: string
   break: { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
 };
 
-// Generate sample events for a month
-const generateMonthEvents = (year: number, month: number): Record<string, CalendarEvent[]> => {
+// Build events from actual task data
+const buildEventsFromTasks = (tasks: { id: string; title: string; type: string; duration: number; completed: boolean; date: string; completedAt: string | null }[]): Record<string, CalendarEvent[]> => {
   const events: Record<string, CalendarEvent[]> = {};
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateKey = `${year}-${month}-${day}`;
-    const dayEvents: CalendarEvent[] = [];
-    
-    // Add some sample events
-    if (day % 3 === 0) {
-      dayEvents.push({
-        id: `e-${day}-1`,
-        title: 'Listening Practice',
-        time: '9:00 AM',
-        duration: 30,
-        type: 'listening',
-        completed: day < new Date().getDate(),
-      });
-    }
-    if (day % 2 === 0) {
-      dayEvents.push({
-        id: `e-${day}-2`,
-        title: 'Reading Passage',
-        time: '2:00 PM',
-        duration: 25,
-        type: 'reading',
-        completed: day < new Date().getDate(),
-      });
-    }
-    if (day % 4 === 0) {
-      dayEvents.push({
-        id: `e-${day}-3`,
-        title: 'Speaking Exercise',
-        time: '7:00 PM',
-        duration: 20,
-        type: 'speaking',
-        completed: day < new Date().getDate() - 2,
-      });
-    }
-    if (day === 15 || day === 30) {
-      dayEvents.push({
-        id: `e-${day}-4`,
-        title: 'Mock Test',
-        time: '10:00 AM',
-        duration: 180,
-        type: 'mock',
-        completed: day < new Date().getDate(),
-      });
-    }
-    
-    events[dateKey] = dayEvents;
+  for (const task of tasks) {
+    const taskDate = new Date(task.date);
+    const dateKey = `${taskDate.getFullYear()}-${taskDate.getMonth()}-${taskDate.getDate()}`;
+    if (!events[dateKey]) events[dateKey] = [];
+    events[dateKey].push({
+      id: task.id,
+      title: task.title,
+      time: task.completedAt ? new Date(task.completedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—',
+      duration: task.duration,
+      type: task.type as CalendarEvent['type'],
+      completed: task.completed,
+    });
   }
-  
   return events;
 };
 
 export function StudyCalendar() {
   const today = new Date();
+  const { userData, toggleTask } = useData();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
-  const [events, setEvents] = useState<Record<string, CalendarEvent[]>>(
-    generateMonthEvents(today.getFullYear(), today.getMonth())
-  );
+
+  // Build events from actual task data
+  const events = useMemo(() => {
+    return buildEventsFromTasks(userData?.tasks || []);
+  }, [userData?.tasks]);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -181,30 +147,21 @@ export function StudyCalendar() {
       if (currentMonth === 0) {
         setCurrentMonth(11);
         setCurrentYear(currentYear - 1);
-        setEvents(generateMonthEvents(currentYear - 1, 11));
       } else {
         setCurrentMonth(currentMonth - 1);
-        setEvents(generateMonthEvents(currentYear, currentMonth - 1));
       }
     } else {
       if (currentMonth === 11) {
         setCurrentMonth(0);
         setCurrentYear(currentYear + 1);
-        setEvents(generateMonthEvents(currentYear + 1, 0));
       } else {
         setCurrentMonth(currentMonth + 1);
-        setEvents(generateMonthEvents(currentYear, currentMonth + 1));
       }
     }
   };
 
-  const toggleEventComplete = (dateKey: string, eventId: string) => {
-    setEvents(prev => ({
-      ...prev,
-      [dateKey]: prev[dateKey].map(e => 
-        e.id === eventId ? { ...e, completed: !e.completed } : e
-      )
-    }));
+  const toggleEventComplete = async (eventId: string) => {
+    await toggleTask(eventId);
   };
 
   const selectedDateKey = selectedDate 
@@ -430,7 +387,7 @@ export function StudyCalendar() {
                           <span className="text-xs text-gray-500">{event.time}</span>
                         </div>
                         <button
-                          onClick={() => toggleEventComplete(selectedDateKey, event.id)}
+                          onClick={() => toggleEventComplete(event.id)}
                           className={cn(
                             "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
                             event.completed 

@@ -458,8 +458,12 @@ export function CommunityView() {
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium mb-2">Or share your invite link:</p>
                 <div className="flex gap-2">
-                  <Input value="https://leapscholar.com/invite/u/12345" readOnly />
-                  <Button variant="outline">Copy</Button>
+                  <Input value={`${window.location.origin}/invite/${user?.id || 'guest'}`} readOnly />
+                  <Button variant="outline" onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/invite/${user?.id || 'guest'}`);
+                    setInviteMessage({ type: 'success', text: 'Link copied to clipboard!' });
+                    setTimeout(() => setInviteMessage(null), 3000);
+                  }}>Copy</Button>
                 </div>
               </div>
               <Button variant="outline" className="w-full" onClick={() => setShowInviteModal(false)}>
@@ -502,10 +506,10 @@ export function CommunityView() {
               </div>
 
               {[
-                { label: 'Points', user: 2450, friend: selectedFriend.points },
-                { label: 'Level', user: 3, friend: selectedFriend.level },
-                { label: 'Streak', user: 12, friend: selectedFriend.streak },
-                { label: 'Tasks', user: 32, friend: 28 },
+                { label: 'Points', user: userData?.stats?.totalPoints || 0, friend: selectedFriend.points },
+                { label: 'Level', user: userData?.stats?.level || 1, friend: selectedFriend.level },
+                { label: 'Streak', user: userData?.stats?.streak || 0, friend: selectedFriend.streak },
+                { label: 'Tasks', user: userData?.stats?.tasksCompleted || 0, friend: 28 },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="flex justify-between text-sm mb-1">

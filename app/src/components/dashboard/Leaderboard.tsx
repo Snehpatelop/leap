@@ -1,17 +1,37 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Users, TrendingUp, TrendingDown, Minus, Trophy, Medal, Award, UserPlus, Share2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/contexts/DataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 export function Leaderboard() {
   const { userData } = useData();
+  const { user } = useAuth();
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  const leaderboard = userData?.leaderboard || [];
+  // Build leaderboard with the current user's real data
+  const leaderboard = useMemo(() => {
+    const entries = [...(userData?.leaderboard || [])].filter(e => !e.isUser);
+    const userPoints = userData?.stats?.totalPoints || 0;
+    const userName = user?.name || 'You';
+    const userAvatar = user?.avatar || 'U';
+    entries.push({
+      rank: 0,
+      name: userName,
+      points: userPoints,
+      avatar: userAvatar,
+      change: 'same' as const,
+      isUser: true,
+    });
+    entries.sort((a, b) => b.points - a.points);
+    entries.forEach((entry, i) => { entry.rank = i + 1; });
+    return entries;
+  }, [userData?.leaderboard, userData?.stats?.totalPoints, user?.name, user?.avatar]);
+
   const userRank = leaderboard.find(e => e.isUser)?.rank || 0;
 
   const getRankIcon = (rank: number) => {
