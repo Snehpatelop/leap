@@ -217,7 +217,7 @@ class FriendsManager {
     const body = encodeURIComponent(
       `Hi there!\n\n${senderName} thinks you'd love Leap Scholar — a fun, gamified IELTS prep platform.\n\nJoin now and start your learning journey: ${window.location.origin}\n\nSee you there! 🎯`
     );
-    window.open(`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`, '_self');
+    window.open(`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`, '_blank');
 
     return { success: true, message: `Invitation email opened for ${email}!` };
   }
